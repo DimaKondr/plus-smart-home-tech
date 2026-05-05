@@ -21,7 +21,6 @@ public class HubEventMapper {
 
         HubEventAvro data = new HubEventAvro();
         data.setHubId(event.getHubId());
-        //data.setTimestamp(event.getTimestamp());
         data.setTimestamp(event.getTimestamp().truncatedTo(ChronoUnit.MILLIS));
 
         switch (event.getType()) {

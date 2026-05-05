@@ -17,7 +17,6 @@ public class SensorEventMapper {
         SensorEventAvro data = new SensorEventAvro();
         data.setId(event.getId());
         data.setHubId(event.getHubId());
-        //data.setTimestamp(event.getTimestamp());
         data.setTimestamp(event.getTimestamp().truncatedTo(ChronoUnit.MILLIS));
 
         switch (event.getType()) {
