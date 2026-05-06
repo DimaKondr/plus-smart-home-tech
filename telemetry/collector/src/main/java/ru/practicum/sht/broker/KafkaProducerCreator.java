@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Properties;
 
-@Configuration
+//@Configuration
 public class KafkaProducerCreator {
 
-    @Bean(destroyMethod = "close")
+    //@Bean(destroyMethod = "close")
     public Producer<String, SpecificRecordBase> getProducer() {
         return new KafkaProducer<>(getConfig());
     }
