@@ -26,7 +26,7 @@ public class ScenarioConditionMapper {
         return ScenarioConditionAvro.newBuilder()
                 .setSensorId(scenario.getSensorId())
                 .setType(ConditionTypeMapper.toAvro(scenario.getType()))
-                .setOpertaion(ConditionOperationMapper.toAvro(scenario.getOperation()))
+                .setOperation(ConditionOperationMapper.toAvro(scenario.getOperation()))
                 .setValue(getProtoValue(scenario))
                 .build();
     }
