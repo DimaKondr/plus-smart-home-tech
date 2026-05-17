@@ -3,9 +3,7 @@ package ru.practicum.sht.mapper.hub;
 import org.springframework.stereotype.Component;
 import ru.practicum.sht.dto.hub.HubEvent;
 import ru.practicum.sht.dto.hub.HubEventType;
-import ru.practicum.sht.dto.hub.device.DeviceAddedEvent;
 import ru.practicum.sht.dto.hub.device.DeviceRemovedEvent;
-import ru.practicum.sht.dto.hub.scenario.ScenarioAddedEvent;
 import ru.practicum.sht.dto.hub.scenario.ScenarioRemovedEvent;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
@@ -24,7 +22,7 @@ public class HubEventMapper {
         data.setTimestamp(event.getTimestamp().truncatedTo(ChronoUnit.MILLIS));
 
         switch (event.getType()) {
-            case HubEventType.DEVICE_ADDED:
+            /*case HubEventType.DEVICE_ADDED:
                 DeviceAddedEvent deviceAddedEvent = (DeviceAddedEvent) event;
                 data.setPayload(
                         DeviceAddedEventAvro.newBuilder()
@@ -32,7 +30,7 @@ public class HubEventMapper {
                                 .setType(DeviceTypeMapper.toAvro(deviceAddedEvent.getDeviceType()))
                                 .build()
                 );
-                break;
+                break;*/
 
             case HubEventType.DEVICE_REMOVED:
                 DeviceRemovedEvent deviceRemovedEvent = (DeviceRemovedEvent) event;
@@ -43,7 +41,7 @@ public class HubEventMapper {
                 );
                 break;
 
-            case HubEventType.SCENARIO_ADDED:
+            /*case HubEventType.SCENARIO_ADDED:
                 ScenarioAddedEvent scenarioAddedEvent = (ScenarioAddedEvent) event;
                 data.setPayload(
                         ScenarioAddedEventAvro.newBuilder()
@@ -60,7 +58,7 @@ public class HubEventMapper {
                                 )
                                 .build()
                 );
-                break;
+                break;*/
 
             case HubEventType.SCENARIO_REMOVED:
                 ScenarioRemovedEvent scenarioRemovedEvent = (ScenarioRemovedEvent) event;

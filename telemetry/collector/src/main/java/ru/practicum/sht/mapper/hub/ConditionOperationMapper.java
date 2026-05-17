@@ -1,11 +1,11 @@
 package ru.practicum.sht.mapper.hub;
 
-import ru.practicum.sht.dto.hub.scenario.ConditionOperation;
+import ru.yandex.practicum.grpc.telemetry.event.ConditionOperationProto;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 
 public class ConditionOperationMapper {
 
-    public static ConditionOperationAvro toAvro(ConditionOperation type) {
+    public static ConditionOperationAvro toAvro(ConditionOperationProto type) {
         if (type == null) {
             return null;
         }

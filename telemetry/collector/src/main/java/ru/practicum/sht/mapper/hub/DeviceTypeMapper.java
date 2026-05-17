@@ -1,11 +1,11 @@
 package ru.practicum.sht.mapper.hub;
 
-import ru.practicum.sht.dto.hub.device.DeviceType;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceTypeProto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;
 
 public class DeviceTypeMapper {
 
-    public static DeviceTypeAvro toAvro(DeviceType type) {
+    public static DeviceTypeAvro toAvro(DeviceTypeProto type) {
         if (type == null) {
             return null;
         }
