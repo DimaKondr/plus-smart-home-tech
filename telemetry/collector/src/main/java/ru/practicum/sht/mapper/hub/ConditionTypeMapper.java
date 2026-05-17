@@ -5,14 +5,6 @@ import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
 public class ConditionTypeMapper {
 
-    /*public static ConditionTypeAvro toAvro(ConditionType type) {
-        if (type == null) {
-            return null;
-        }
-
-        return ConditionTypeAvro.valueOf(type.name());
-    }*/
-
     public static ConditionTypeAvro toAvro(ConditionTypeProto type) {
         if (type == null) {
             return null;
