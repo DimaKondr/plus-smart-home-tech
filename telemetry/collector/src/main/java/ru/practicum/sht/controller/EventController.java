@@ -39,10 +39,10 @@ import java.util.stream.Collectors;
 public class EventController extends CollectorControllerImplBase {
     //private final SensorEventService sensorEventService;
     //private final HubEventService hubEventService;
-    private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorEventHandlers;
-    private final Map<HubEventProto.PayloadCase, HubEventHandler> hubEventHandlers;
+    /*private final Map<SensorEventProto.PayloadCase, SensorEventHandler> sensorEventHandlers;
+    private final Map<HubEventProto.PayloadCase, HubEventHandler> hubEventHandlers;*/
 
-    public EventController(Set<SensorEventHandler> sensorEventHandlers, Set<HubEventHandler> hubEventHandlers) {
+    /*public EventController(Set<SensorEventHandler> sensorEventHandlers, Set<HubEventHandler> hubEventHandlers) {
         this.sensorEventHandlers = sensorEventHandlers.stream()
                 .collect(Collectors.toMap(
                         SensorEventHandler::getMessageType,
@@ -54,6 +54,9 @@ public class EventController extends CollectorControllerImplBase {
                         HubEventHandler::getMessageType,
                         Function.identity()
                 ));
+    }*/
+
+    public EventController() {
     }
 
     //@PostMapping("/sensors")
@@ -73,7 +76,7 @@ public class EventController extends CollectorControllerImplBase {
      * @param request           Событие от датчика
      * @param responseObserver  Ответ для клиента
      */
-    @Override
+    /*@Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         log.info("Поступили данные данные о новом событии датчика: {}.", request);
 
@@ -95,11 +98,11 @@ public class EventController extends CollectorControllerImplBase {
             e.printStackTrace(System.err);
 
 
-            /*responseObserver.onError(new StatusRuntimeException(
+            *//*responseObserver.onError(new StatusRuntimeException(
                     Status.INTERNAL
                             .withDescription(e.getLocalizedMessage())
                             .withCause(e)
-            ));*/
+            ));*//*
 
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage() != null ? e.getMessage() : e.toString())
@@ -108,7 +111,17 @@ public class EventController extends CollectorControllerImplBase {
 
 
         }
+    }*/
+
+
+    @Override
+    public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
+        System.err.println("!!! REQUEST RECEIVED !!! " + request);
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
     }
+
+
 
     //@PostMapping("/hubs")
     /*public void collectHubEvent(
@@ -127,7 +140,7 @@ public class EventController extends CollectorControllerImplBase {
      * @param request           Событие от хаба
      * @param responseObserver  Ответ для клиента
      */
-    @Override
+    /*@Override
     public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
         log.info("Поступили данные данные о новом событии хаба: {}.", request);
 
@@ -147,11 +160,11 @@ public class EventController extends CollectorControllerImplBase {
             System.err.println("!!! ERROR PROCESSING EVENT !!!");
             e.printStackTrace(System.err);
 
-            /*responseObserver.onError(new StatusRuntimeException(
+            *//*responseObserver.onError(new StatusRuntimeException(
                     Status.INTERNAL
                             .withDescription(e.getLocalizedMessage())
                             .withCause(e)
-            ));*/
+            ));*//*
 
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage() != null ? e.getMessage() : e.toString())
@@ -160,7 +173,16 @@ public class EventController extends CollectorControllerImplBase {
         }
 
 
+    }*/
+
+
+    @Override
+    public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
+        System.err.println("!!! REQUEST RECEIVED !!! " + request);
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
     }
+
 
     @PostConstruct
     public void init() {

@@ -8,7 +8,16 @@ public class Collector {
 
     public static void main(String[] args) {
 
-        SpringApplication.run(Collector.class, args);
+        //SpringApplication.run(Collector.class, args);
+
+
+        try {
+            SpringApplication.run(Collector.class, args);
+        } catch (Throwable t) {
+            System.err.println("!!! CRITICAL SPRING BOOT STARTUP ERROR !!!");
+            t.printStackTrace(System.err);
+            throw t;
+        }
 
     }
 
