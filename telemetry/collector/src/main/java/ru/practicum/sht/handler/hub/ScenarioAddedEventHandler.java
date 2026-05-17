@@ -42,7 +42,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                                                 .toList()
                                 )
                                 .setActions(
-                                        scenarioAddedEvent.getActionsList().stream()
+                                        scenarioAddedEvent.getActionList().stream()
                                                 .map(DeviceActionMapper::toAvro)
                                                 .toList()
                                 )

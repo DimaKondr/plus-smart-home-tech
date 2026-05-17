@@ -22,10 +22,13 @@ public class DeviceActionMapper {
             return null;
         }
 
+        Integer actionValue = action.hasValue() ? action.getValue() : null;
+
         return DeviceActionAvro.newBuilder()
                 .setSensorId(action.getSensorId())
                 .setType(ActionTypeMapper.toAvro(action.getType()))
-                .setValue(action.getValue())
+                //.setValue(action.getValue())
+                .setValue(actionValue)
                 .build();
     }
 
