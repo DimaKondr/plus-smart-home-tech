@@ -75,6 +75,9 @@ public class EventController extends CollectorControllerImplBase {
     @Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         log.info("Поступили данные данные о новом событии датчика: {}.", request);
+
+        System.out.println("Поступили данные данные о новом событии датчика: " + request + " .");
+
         try {
             if (sensorEventHandlers.containsKey(request.getPayloadCase())) {
                 sensorEventHandlers.get(request.getPayloadCase()).handle(request);
@@ -85,11 +88,24 @@ public class EventController extends CollectorControllerImplBase {
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(
+
+
+            System.err.println("!!! ERROR PROCESSING EVENT !!!");
+            e.printStackTrace(System.err);
+
+
+            /*responseObserver.onError(new StatusRuntimeException(
                     Status.INTERNAL
                             .withDescription(e.getLocalizedMessage())
                             .withCause(e)
-            ));
+            ));*/
+
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage() != null ? e.getMessage() : e.toString())
+                    .withCause(e)
+                    .asRuntimeException());
+
+
         }
     }
 
@@ -110,8 +126,12 @@ public class EventController extends CollectorControllerImplBase {
      * @param request           Событие от хаба
      * @param responseObserver  Ответ для клиента
      */
+    @Override
     public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
         log.info("Поступили данные данные о новом событии хаба: {}.", request);
+
+        System.out.println("Поступили данные данные о новом событии хаба: " + request + " .");
+
         try {
             if (hubEventHandlers.containsKey(request.getPayloadCase())) {
                 hubEventHandlers.get(request.getPayloadCase()).handle(request);
@@ -122,12 +142,23 @@ public class EventController extends CollectorControllerImplBase {
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(
+
+            System.err.println("!!! ERROR PROCESSING EVENT !!!");
+            e.printStackTrace(System.err);
+
+            /*responseObserver.onError(new StatusRuntimeException(
                     Status.INTERNAL
                             .withDescription(e.getLocalizedMessage())
                             .withCause(e)
-            ));
+            ));*/
+
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage() != null ? e.getMessage() : e.toString())
+                    .withCause(e)
+                    .asRuntimeException());
         }
+
+
     }
 
 }
