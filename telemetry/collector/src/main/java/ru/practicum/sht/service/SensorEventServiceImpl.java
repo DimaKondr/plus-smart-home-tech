@@ -24,7 +24,7 @@ public class SensorEventServiceImpl implements SensorEventService {
         String key = avroData.getHubId();
         log.info("Готовы данные в формате Avro: >>> {} <<< для отправки в Kafka-топик: >>> {} <<<", avroData, topic);
 
-        kafkaTemplate.send(topic, key,avroData);
+        kafkaTemplate.send(topic, key, avroData);
     }
 
 }
