@@ -9,14 +9,15 @@ public class Collector {
     public static void main(String[] args) {
 
         //SpringApplication.run(Collector.class, args);
-
+        System.out.println(">>>>>>>>>>!!! JVM MAIN STARTED !!!<<<<<<<<<<");
 
         try {
             SpringApplication.run(Collector.class, args);
         } catch (Throwable t) {
-            System.err.println("!!! CRITICAL SPRING BOOT STARTUP ERROR !!!");
+            System.err.println(">>>>>>>>>>!!! SPRING LAUNCH FAILED !!!<<<<<<<<<<");
             t.printStackTrace(System.err);
-            throw t;
+            //throw t;
+            System.exit(1);
         }
 
     }

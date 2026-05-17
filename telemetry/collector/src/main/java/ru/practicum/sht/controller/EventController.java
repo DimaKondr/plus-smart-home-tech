@@ -59,6 +59,11 @@ public class EventController extends CollectorControllerImplBase {
     public EventController() {
     }
 
+    @PostConstruct
+    public void init() {
+        System.out.println("!!! EVENT_CONTROLLER SUCCESSFULLY INITIALIZED BY SPRING !!!");
+    }
+
     //@PostMapping("/sensors")
     /*public void collectSensorEvent(
                 //@RequestBody
@@ -181,12 +186,6 @@ public class EventController extends CollectorControllerImplBase {
         System.err.println("!!! REQUEST RECEIVED !!! " + request);
         responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
-    }
-
-
-    @PostConstruct
-    public void init() {
-        System.out.println("!!! EVENT_CONTROLLER SUCCESSFULLY INITIALIZED BY SPRING !!!");
     }
 
 }
