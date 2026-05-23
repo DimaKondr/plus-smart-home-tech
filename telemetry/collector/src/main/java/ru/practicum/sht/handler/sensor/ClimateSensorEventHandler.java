@@ -26,7 +26,6 @@ public class ClimateSensorEventHandler implements SensorEventHandler {
 
     @Override
     public void handle(SensorEventProto event) {
-        //SensorEventAvro avroData = mapper.toAvro(event);
         ClimateSensorProto climateSensorEvent = event.getClimateSensor();
         Instant timestamp = Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos());
         SensorEventAvro avroData = SensorEventAvro.newBuilder()
