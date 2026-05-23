@@ -11,7 +11,7 @@ import org.apache.kafka.common.serialization.Serializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class CollectorAvroSerializer implements Serializer<SpecificRecordBase> {
+public class AggregatorAvroSerializer implements Serializer<SpecificRecordBase> {
     private final EncoderFactory encoderFactory = EncoderFactory.get();
     private BinaryEncoder encoder;
 
@@ -26,7 +26,7 @@ public class CollectorAvroSerializer implements Serializer<SpecificRecordBase> {
             }
             return out.toByteArray();
         } catch (IOException e) {
-            throw new SerializationException("Ошибка сериализации данных в коллекторе для топика [" + topic + "].", e);
+            throw new SerializationException("Ошибка сериализации данных в агрегаторе для топика [" + topic + "].", e);
         }
     }
 
