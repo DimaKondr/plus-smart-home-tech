@@ -234,12 +234,21 @@ public class SnapshotProcessor {
      */
     private Object getSensorValue(Object avroUnionData, ConditionTypeAvro conditionType) {
         return switch (conditionType) {
-            case TEMPERATURE -> avroUnionData instanceof TemperatureSensorAvro t ? t.getTemperatureC() : null;
+            //case TEMPERATURE -> avroUnionData instanceof TemperatureSensorAvro t ? t.getTemperatureC() : null;
+            case TEMPERATURE -> {
+                if (avroUnionData instanceof TemperatureSensorAvro t) {
+                    yield t.getTemperatureC();
+                }
+                if (avroUnionData instanceof ClimateSensorAvro c) {
+                    yield c.getTemperatureC();
+                }
+                yield null;
+            }
             case HUMIDITY -> avroUnionData instanceof ClimateSensorAvro c ? c.getHumidity() : null;
             case CO2LEVEL -> avroUnionData instanceof ClimateSensorAvro c ? c.getCo2Level() : null;
             case LUMINOSITY -> avroUnionData instanceof LightSensorAvro l ? l.getLuminosity() : null;
             case MOTION -> avroUnionData instanceof MotionSensorAvro m ? m.getMotion() : null; // Возвращает boolean
-            case SWITCH -> avroUnionData instanceof SwitchSensorAvro s ? s.getState() : null;           // Возвращает boolean
+            case SWITCH -> avroUnionData instanceof SwitchSensorAvro s ? s.getState() : null;   // Возвращает boolean
         };
     }
 
