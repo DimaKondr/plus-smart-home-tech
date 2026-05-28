@@ -12,7 +12,6 @@ import org.springframework.kafka.support.serializer.DeserializationException;
 import java.util.Map;
 
 public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deserializer<T> {
-    // ....
     private final DecoderFactory decoderFactory;
     private final DatumReader<T> reader;
     private boolean isKey;
@@ -22,12 +21,10 @@ public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deser
     }
 
     public BaseAvroDeserializer(DecoderFactory decoderFactory, Schema schema) {
-        // ...
         this.decoderFactory = decoderFactory;
         this.reader = new SpecificDatumReader<>(schema);
     }
 
-    // ...
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
         this.isKey = isKey;
@@ -35,7 +32,6 @@ public class BaseAvroDeserializer<T extends SpecificRecordBase> implements Deser
 
     @Override
     public T deserialize(String topic, byte[] data) {
-        // Код десериализации двоичных данных
         try {
             if (data != null) {
                 BinaryDecoder decoder = decoderFactory.binaryDecoder(data, null);

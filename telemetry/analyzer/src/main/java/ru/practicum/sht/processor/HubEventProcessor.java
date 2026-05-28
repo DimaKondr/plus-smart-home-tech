@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class HubEventProcessor implements Runnable {
-    // ...
     private final HubEventConsumerConfig consumerConfig;
     private final SensorRepository sensorRepository;
     private final ScenarioRepository scenarioRepository;
@@ -39,9 +38,6 @@ public class HubEventProcessor implements Runnable {
 
     @Override
     public void run() {
-        // подписка на топики
-        // ...
-        // цикл опроса
         try {
             Properties properties = new Properties();
             properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
@@ -66,17 +62,6 @@ public class HubEventProcessor implements Runnable {
 
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
                     log.info("Поступили данные события хаба: {}", record.value());
-
-                    //Optional<SensorsSnapshotAvro> result = handler.updateState(record.value());
-                    /*if (result.isPresent()) {
-                        SensorsSnapshotAvro snapshotAvro = result.get();
-                        String key = snapshotAvro.getHubId();
-                        log.info("Готовы данные снимка состояния датчиков (snapshot) в формате Avro:" +
-                                        " >>> {} <<< для отправки в Kafka-топик: >>> {} <<<",
-                                snapshotAvro, AggregatorTopics.TELEMETRY_SNAPSHOTS_V1);
-
-                        producer.send(AggregatorTopics.TELEMETRY_SNAPSHOTS_V1, key, snapshotAvro);
-                    }*/
                     handleEvent(record.value());
                 }
             }
@@ -102,10 +87,9 @@ public class HubEventProcessor implements Runnable {
         }
     }
 
-    // ...детали реализации...
     private void handleEvent(HubEventAvro hubEvent) {
         String hubId = hubEvent.getHubId();
-        switch(hubEvent.getPayload()) {
+        switch (hubEvent.getPayload()) {
             case DeviceAddedEventAvro deviceAddedEvent -> handleEvent(hubId, deviceAddedEvent);
             case DeviceRemovedEventAvro deviceRemovedEvent -> handleEvent(hubId, deviceRemovedEvent);
             case ScenarioAddedEventAvro scenarioAddedEvent -> handleEvent(hubId, scenarioAddedEvent);
