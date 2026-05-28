@@ -1,0 +1,273 @@
+package ru.practicum.sht.processor;
+
+import com.google.protobuf.Timestamp;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.errors.WakeupException;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+import ru.practicum.sht.broker.AnalyzerTopics;
+import ru.practicum.sht.config.SnapshotConsumerConfig;
+import ru.practicum.sht.model.Action;
+import ru.practicum.sht.model.Condition;
+import ru.practicum.sht.model.Scenario;
+import ru.practicum.sht.repository.ScenarioRepository;
+import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionRequest;
+import ru.yandex.practicum.grpc.telemetry.hubrouter.HubRouterControllerGrpc;
+import ru.yandex.practicum.kafka.telemetry.event.*;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro.*;
+
+@Component
+//@RequiredArgsConstructor
+@Slf4j
+public class SnapshotProcessor {
+    private final SnapshotConsumerConfig consumerConfig;
+    //private final KafkaTemplate<String, SpecificRecordBase> producer;
+    private final ScenarioRepository scenarioRepository;
+    //@GrpcClient("hub-router")
+    private final HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient;
+    private KafkaConsumer<String, SensorsSnapshotAvro> consumer;
+
+
+
+
+
+    public SnapshotProcessor(
+            SnapshotConsumerConfig consumerConfig,
+            //KafkaTemplate<String, SpecificRecordBase> producer,
+            ScenarioRepository scenarioRepository,
+            @GrpcClient("hub-router") HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterClient) {
+        this.consumerConfig = consumerConfig;
+        //this.producer = producer;
+        this.scenarioRepository = scenarioRepository;
+        this.hubRouterClient = hubRouterClient;
+    }
+
+
+    public void start() {
+        try {
+            // ... подготовка к обработке данных ...
+            // ... например, подписка на топик ...
+            Properties properties = new Properties();
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                    consumerConfig.getBootstrapServers());
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                    consumerConfig.getSnapshotConsumer().getKeyDeserializer());
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                    consumerConfig.getSnapshotConsumer().getValueDeserializer());
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+                    consumerConfig.getSnapshotConsumer().getAutoOffsetReset());
+            properties.put(ConsumerConfig.GROUP_ID_CONFIG,
+                    consumerConfig.getSnapshotConsumer().getGroupId());
+            //this.consumer = (KafkaConsumer<String, SensorEventAvro>) consumerFactory.createConsumer();
+            this.consumer = new KafkaConsumer<>(properties);
+            //String topic = AggregatorTopics.TELEMETRY_SENSORS_V1;
+
+            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+
+            consumer.subscribe(List.of(AnalyzerTopics.TELEMETRY_SNAPSHOTS_V1));
+
+            // Цикл обработки событий
+            while (true) {
+                // ... реализация цикла опроса ...
+                // ... и обработка полученных данных ...
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
+
+                for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
+                    log.info("Поступили данные состояния датчиков: {}", record.value());
+                    SensorsSnapshotAvro snapshot = record.value();
+                    //List<Scenario> scenarios = scenarioRepository.findByHubId(snapshot.getHubId());
+
+                    //List<Scenario> suitableScenarios = scenarios.stream()
+                    scenarioRepository.findByHubId(snapshot.getHubId()).stream()
+                            .filter(scenario -> !scenario.getConditions().isEmpty())
+                            .filter(scenario -> matchConditions(scenario.getConditions(),
+                                    snapshot.getSensorsState()))
+                            /*.map(Scenario::getActions)
+                            .flatMap(actionsMap -> actionsMap.entrySet().stream())*/
+
+                            // 2. MAP & FLATMAP: Разворачиваем действия, сохраняя ссылку на сам сценарий
+                            // Передаем дальше стрим записей Map.Entry, где ключ — сценарий, а значение — запись из карты действий
+                            .flatMap(scenario -> scenario.getActions().entrySet().stream()
+                                    .map(actionEntry -> Map.entry(scenario, actionEntry)))
+                            /*.forEach(entry -> {
+                                String sensorId = entry.getKey();
+                                Action action = entry.getValue();*/
+
+                            // 3. REDUCE / EXECUTE: Теперь у нас есть доступ и к сценарию, и к конкретному действию
+                            .forEach(contextEntry -> {
+                                Scenario scenario = contextEntry.getKey();               // Достаем сценарий
+                                Map.Entry<String, Action> actionEntry = contextEntry.getValue(); // Достаем запись действия
+
+                                String sensorId = actionEntry.getKey();
+                                Action action = actionEntry.getValue();
+
+                                log.info("Выполняется действие для датчика {}: тип={}, значение={}",
+                                        sensorId, action.getType(), action.getValue());
+
+                                try {
+                                    // 1. Создаем вложенный объект действия
+                                    DeviceActionProto actionProto = DeviceActionProto.newBuilder()
+                                            .setSensorId(sensorId)
+                                            .setType(ActionTypeProto.valueOf(action.getType().toUpperCase()))
+                                            .setValue(action.getValue() != null ? action.getValue() : 0)
+                                            .build();
+
+                                    // 2. Создаем метку времени Protobuf
+                                    Instant instant = Instant.now();
+                                    Timestamp timestampProto = Timestamp.newBuilder()
+                                            .setSeconds(instant.getEpochSecond())
+                                            .setNanos(instant.getNano())
+                                            .build();
+
+                                    // 3. Собираем финальный запрос
+                                    DeviceActionRequest grpcRequest = DeviceActionRequest.newBuilder()
+                                            .setHubId(snapshot.getHubId())
+                                            .setScenarioName(scenario.getName()) // Убедитесь, что объект scenario доступен в этой области видимости
+                                            .setAction(actionProto)
+                                            .setTimestamp(timestampProto)
+                                            .build();
+
+                                    // 4. Отправляем через клиент
+                                    hubRouterClient.handleDeviceAction(grpcRequest);
+                                    log.info("gRPC команда успешно доставлена для датчика {}", sensorId);
+                                } catch (Exception e) {
+                                    log.error("Не удалось отправить gRPC команду для датчика {}", sensorId, e);
+                                }
+                            });
+                }
+            }
+
+        } catch (WakeupException ignored) {
+            // игнорируем - закрываем консьюмер и продюсер в блоке finally
+            log.info("Получен сигнал остановки (WakeupException)");
+        } catch (Exception e) {
+            log.error("Ошибка во время обработки событий от датчиков", e);
+        } finally {
+            try {
+                // Перед тем, как закрыть продюсер и консьюмер, нужно убедиться,
+                // что все сообщения, лежащие в буффере, отправлены и
+                // все оффсеты обработанных сообщений зафиксированы
+                log.info("Сброс буферов и фиксация смещений перед закрытием...");
+
+                // здесь нужно вызвать метод продюсера для сброса данных в буффере
+                // 1. Сбрасываем данные из буфера продюсера в сеть
+                /*if (producer != null) {
+                    producer.flush();
+                }*/
+
+                // здесь нужно вызвать метод консьюмера для фиксации смещений
+                // 2. Фиксируем смещения обработанных сообщений (синхронно)
+                if (consumer != null) {
+                    consumer.commitSync();
+                }
+
+            } catch (Exception e) {
+                log.error("Ошибка при финальном сбросе данных или коммите оффсетов", e);
+            } finally {
+                if (consumer != null) {
+                    log.info("Закрываем консьюмер");
+                    consumer.close();
+                }
+
+                /*if (producer != null) {
+                    log.info("Закрываем продюсер");
+                    producer.destroy();
+                }*/
+            }
+        }
+    }
+
+    /**
+     * Проверяет, выполняются ли ВСЕ условия заданного сценария.
+     */
+    private boolean matchConditions(Map<String, Condition> scenarioConditions, Map<String, SensorStateAvro> sensorsState) {
+        return scenarioConditions.entrySet().stream().allMatch(entry -> {
+            String sensorId = entry.getKey();
+            Condition condition = entry.getValue();
+
+            // Ищем состояние конкретного датчика в снапшоте Avro
+            SensorStateAvro sensorState = sensorsState.get(sensorId);
+            if (sensorState == null || sensorState.getData() == null) {
+                return false; // Датчик отсутствует в текущем снапшоте
+            }
+
+            try {
+                // Безопасно преобразуем строковые типы из БД в Avro Enums
+                ConditionTypeAvro conditionType = ConditionTypeAvro.valueOf(condition.getType().toUpperCase());
+                ConditionOperationAvro operation = ConditionOperationAvro.valueOf(condition.getOperation().toUpperCase());
+
+                // Извлекаем численное или булево значение из Avro Union датчика
+                Object actualValue = getSensorValue(sensorState.getData(), conditionType);
+                if (actualValue == null) {
+                    return false; // Тип датчика в снапшоте не соответствует условию
+                }
+
+                // Сверяем фактическое значение с пороговым из БД с учетом типа операции
+                return checkOperation(actualValue, operation, condition.getValue());
+
+            } catch (IllegalArgumentException e) {
+                log.error("Ошибка маппинга Condition из БД в Avro Enum. Type: {}, Operation: {}",
+                        condition.getType(), condition.getOperation(), e);
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Распаковывает Avro Union состояния датчика, опираясь на требуемый ConditionTypeAvro.
+     */
+    private Object getSensorValue(Object avroUnionData, ConditionTypeAvro conditionType) {
+        return switch (conditionType) {
+            case TEMPERATURE -> avroUnionData instanceof TemperatureSensorAvro t ? t.getTemperatureC() : null;
+            case HUMIDITY -> avroUnionData instanceof ClimateSensorAvro c ? c.getHumidity() : null;
+            case CO2LEVEL -> avroUnionData instanceof ClimateSensorAvro c ? c.getCo2Level() : null;
+            case LUMINOSITY -> avroUnionData instanceof LightSensorAvro l ? l.getLuminosity() : null;
+            case MOTION -> avroUnionData instanceof MotionSensorAvro m ? m.getMotion() : null; // Возвращает boolean
+            case SWITCH -> avroUnionData instanceof SwitchSensorAvro s ? s.getState() : null;           // Возвращает boolean
+        };
+    }
+
+    /**
+     * Выполняет сравнение объектов (Integer или Boolean) на основе Avro-операции.
+     */
+    private boolean checkOperation(Object actual, ConditionOperationAvro operation, Integer expectedValue) {
+        if (actual instanceof Boolean actualBool) {
+            // Для логических условий (MOTION, SWITCH) допустима только операция EQUALS
+            if (operation != ConditionOperationAvro.EQUALS) {
+                log.warn("Для булевых условий поддерживается только операция EQUALS. Получено: {}", operation);
+                return false;
+            }
+            // В БД значение хранится как Integer (например, 1 = true, 0 = false)
+            boolean expectedBool = expectedValue != null && expectedValue != 0;
+            return actualBool == expectedBool;
+        }
+
+        if (actual instanceof Integer actualInt) {
+            if (expectedValue == null) return false;
+            return switch (operation) {
+                case EQUALS -> actualInt.equals(expectedValue);
+                case GREATER_THAN -> actualInt > expectedValue;
+                case LOWER_THAN -> actualInt < expectedValue;
+            };
+        }
+
+        return false;
+    }
+
+}

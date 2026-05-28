@@ -12,7 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import ru.practicum.sht.broker.AggregatorTopics;
 import ru.practicum.sht.config.AggregatorConsumerConfig;
-import ru.practicum.sht.handler.SnapshotProcessor;
+import ru.practicum.sht.handler.SnapshotHandler;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorsSnapshotAvro;
 
@@ -30,7 +30,7 @@ public class AggregationStarter {
     //private final Properties config;
     //private final ConsumerFactory<String, SensorEventAvro> consumerFactory;
     private final AggregatorConsumerConfig consumerConfig;
-    private final SnapshotProcessor handler;
+    private final SnapshotHandler handler;
     private final KafkaTemplate<String, SpecificRecordBase> producer;
     //private KafkaConsumer<String, SpecificRecordBase> consumer;
     private KafkaConsumer<String, SensorEventAvro> consumer;
@@ -53,20 +53,23 @@ public class AggregationStarter {
 
             // ... подготовка к обработке данных ...
             // ... например, подписка на топик ...
-            Properties props = new Properties();
-            props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+            Properties properties = new Properties();
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                     consumerConfig.getBootstrapServers());
-            props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                     consumerConfig.getConsumer().getKeyDeserializer());
-            props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
                     consumerConfig.getConsumer().getValueDeserializer());
-            props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+            properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
                     consumerConfig.getConsumer().getAutoOffsetReset());
-            props.put(ConsumerConfig.GROUP_ID_CONFIG,
+            properties.put(ConsumerConfig.GROUP_ID_CONFIG,
                     consumerConfig.getConsumer().getGroupId());
             //this.consumer = (KafkaConsumer<String, SensorEventAvro>) consumerFactory.createConsumer();
-            this.consumer = new KafkaConsumer<>(props);
+            this.consumer = new KafkaConsumer<>(properties);
             //String topic = AggregatorTopics.TELEMETRY_SENSORS_V1;
+
+            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+
             consumer.subscribe(List.of(AggregatorTopics.TELEMETRY_SENSORS_V1));
 
             // Цикл обработки событий

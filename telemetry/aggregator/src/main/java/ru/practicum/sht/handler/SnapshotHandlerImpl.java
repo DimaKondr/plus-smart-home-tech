@@ -15,7 +15,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SnapshotProcessorImpl implements SnapshotProcessor {
+public class SnapshotHandlerImpl implements SnapshotHandler {
     private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
     @Override
