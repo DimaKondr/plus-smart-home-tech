@@ -15,26 +15,17 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class SnapshotProcessorImpl implements SnapshotProcessor {
+public class SnapshotHandlerImpl implements SnapshotHandler {
     private final Map<String, SensorsSnapshotAvro> snapshots = new HashMap<>();
 
     @Override
     public Optional<SensorsSnapshotAvro> updateState(SensorEventAvro event) {
         SensorsSnapshotAvro snapshot;
 
-        //Проверяем, есть ли снапшот для event.getHubId()
-        //Если снапшот есть, то достаём его
-        //Если нет, то создаём новый
         if (snapshots.containsKey(event.getHubId())) {
             snapshot = snapshots.get(event.getHubId());
             log.info("Найден снимок состояния для хаба с ID: {}.", event.getHubId());
 
-            //Проверяем, есть ли в снапшоте данные для event.getId()
-            //Если данные есть, то достаём их в переменную oldState
-            //Проверка, если oldState.getTimestamp() произошёл позже, чем
-            //event.getTimestamp() или oldState.getData() равен
-            //event.getPayload(), то ничего обнавлять не нужно, выходим из метода
-            //вернув Optional.empty()
             SensorStateAvro oldState;
             if (snapshot.getSensorsState().containsKey(event.getId())) {
                 oldState = snapshot.getSensorsState().get(event.getId());
@@ -57,7 +48,6 @@ public class SnapshotProcessorImpl implements SnapshotProcessor {
             snapshot = SensorsSnapshotAvro.newBuilder()
                     .setHubId(event.getHubId())
                     .setTimestamp(Instant.now())
-                    //.setSensorsState(Map.of(event.getId(), state))
                     .setSensorsState(initialMap)
                     .build();
             snapshots.put(event.getHubId(), snapshot);
@@ -65,13 +55,6 @@ public class SnapshotProcessorImpl implements SnapshotProcessor {
             return Optional.of(snapshot);
         }
 
-
-        // если дошли до сюда, значит, пришли новые данные и
-        // снапшот нужно обновить
-        //Создаём экземпляр SensorStateAvro на основе данных события
-        //Добавляем полученный экземпляр в снапшот
-        //Обновляем таймстемп снапшота таймстемпом из события
-        //Возвращаем снапшот - Optional.of(snapshot)
         log.info("Обновляем данные снимка состояния для хаба с ID: {}.", event.getHubId());
         SensorStateAvro newState = SensorStateAvro.newBuilder()
                 .setTimestamp(event.getTimestamp())

@@ -1,4 +1,19 @@
 services:
+  sht-analyzer-db:
+    image: postgres:16.1
+    container_name: postgres-sht-analyzer-db
+    ports:
+      - "5469:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-analyzer-service
+      - POSTGRES_DB=sht-analyzer-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka

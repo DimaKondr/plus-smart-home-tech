@@ -2,21 +2,24 @@ package ru.practicum.sht.config;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties("spring.kafka")
-public class AggregatorConsumerConfig {
+@ConfigurationProperties("custom.kafka-snapshot")
+public class SnapshotConsumerConfig {
+
+    @Value("${custom.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    private Consumer consumer = new Consumer();
+    private SnapshotConsumer snapshotConsumer = new SnapshotConsumer();
 
     @Getter
     @Setter
-    public static class Consumer {
+    public static class SnapshotConsumer {
         private String keyDeserializer;
         private String valueDeserializer;
         private String autoOffsetReset;
