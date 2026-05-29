@@ -1,4 +1,4 @@
-package ru.practicum.sht.mapper.hub;
+package ru.practicum.sht.mapper;
 
 import ru.yandex.practicum.grpc.telemetry.event.DeviceTypeProto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceTypeAvro;

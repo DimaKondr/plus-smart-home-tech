@@ -6,7 +6,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import ru.practicum.sht.broker.CollectorTopics;
-import ru.practicum.sht.mapper.hub.DeviceTypeMapper;
+import ru.practicum.sht.mapper.DeviceTypeMapper;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceAddedEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
