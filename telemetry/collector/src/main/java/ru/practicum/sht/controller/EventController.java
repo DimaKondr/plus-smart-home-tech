@@ -62,11 +62,8 @@ public class EventController extends CollectorControllerImplBase {
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (Exception e) {
-
-
             System.err.println("!!! ERROR PROCESSING EVENT !!!");
             e.printStackTrace(System.err);
-
 
             responseObserver.onError(new StatusRuntimeException(
                     Status.INTERNAL
@@ -78,8 +75,6 @@ public class EventController extends CollectorControllerImplBase {
                     .withDescription(e.getMessage() != null ? e.getMessage() : e.toString())
                     .withCause(e)
                     .asRuntimeException());
-
-
         }
     }
 
@@ -106,7 +101,6 @@ public class EventController extends CollectorControllerImplBase {
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (Exception e) {
-
             System.err.println("!!! ERROR PROCESSING EVENT !!!");
             e.printStackTrace(System.err);
 

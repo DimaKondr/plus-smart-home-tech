@@ -1,6 +1,5 @@
 package ru.practicum.sht.processor;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,31 +9,32 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
 import ru.practicum.sht.broker.AnalyzerTopics;
 import ru.practicum.sht.config.HubEventConsumerConfig;
-import ru.practicum.sht.mapper.ActionMapper;
-import ru.practicum.sht.mapper.ConditionMapper;
-import ru.practicum.sht.model.Scenario;
-import ru.practicum.sht.model.Sensor;
-import ru.practicum.sht.repository.ScenarioRepository;
-import ru.practicum.sht.repository.SensorRepository;
+import ru.practicum.sht.handler.HubEventHandler;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class HubEventProcessor implements Runnable {
     private final HubEventConsumerConfig consumerConfig;
-    private final SensorRepository sensorRepository;
-    private final ScenarioRepository scenarioRepository;
-    private final ConditionMapper conditionMapper;
-    private final ActionMapper actionMapper;
+    private final Map<Class<?>, HubEventHandler<?>> hubEventHandlers;
     private KafkaConsumer<String, HubEventAvro> consumer;
 
+    public HubEventProcessor(HubEventConsumerConfig consumerConfig, Set<HubEventHandler<?>> hubEventHandlers) {
+        this.consumerConfig = consumerConfig;
+        this.hubEventHandlers = hubEventHandlers.stream()
+                .collect(Collectors.toMap(
+                        HubEventHandler::getPayloadType,
+                        Function.identity()
+                ));
+    }
 
     @Override
     public void run() {
@@ -89,83 +89,20 @@ public class HubEventProcessor implements Runnable {
 
     private void handleEvent(HubEventAvro hubEvent) {
         String hubId = hubEvent.getHubId();
-        switch (hubEvent.getPayload()) {
-            case DeviceAddedEventAvro deviceAddedEvent -> handleEvent(hubId, deviceAddedEvent);
-            case DeviceRemovedEventAvro deviceRemovedEvent -> handleEvent(hubId, deviceRemovedEvent);
-            case ScenarioAddedEventAvro scenarioAddedEvent -> handleEvent(hubId, scenarioAddedEvent);
-            case ScenarioRemovedEventAvro scenarioRemovedEvent -> handleEvent(hubId, scenarioRemovedEvent);
-            default -> log.error("Получено событие хаба неизвестного типа: {}", hubEvent);
+        Object payload = hubEvent.getPayload();
 
-        }
-    }
-
-    private void handleEvent(String hubId, DeviceAddedEventAvro event) {
-        if (sensorRepository.existsByIdInAndHubId(List.of(event.getId()), hubId)) {
-            log.info("Попытка добавления нового устройства. " +
-                    "Устройство с ID: {} уже зарегистрировано в хабе с ID: {}.", event.getId(), hubId);
+        if (payload == null) {
+            log.error("Получено событие хаба без payload: {}", hubEvent);
             return;
         }
 
-        Sensor sensor = new Sensor();
-        sensor.setId(event.getId());
-        sensor.setHubId(hubId);
+        HubEventHandler<Object> handler = (HubEventHandler<Object>) hubEventHandlers.get(payload.getClass());
 
-        sensorRepository.save(sensor);
-        log.info("В хабе с ID: {} зарегистрировано новое устройство с ID: {}.", hubId, event.getId());
-    }
-
-    private void handleEvent(String hubId, DeviceRemovedEventAvro event) {
-        if (!sensorRepository.existsByIdInAndHubId(List.of(event.getId()), hubId)) {
-            log.info("Удаление устройства. Устройство с ID: {} не найдено в хабе с ID: {}.", event.getId(), hubId);
-            return;
+        if (handler != null) {
+            handler.handle(hubId, payload);
+        } else {
+            log.error("Получено событие хаба неизвестного типа: {}", hubEvent);
         }
-
-        sensorRepository.deleteById(event.getId());
-        log.info("Удаление устройства с ID: {} в хабе с ID: {}.", event.getId(), hubId);
-    }
-
-    private void handleEvent(String hubId, ScenarioAddedEventAvro event) {
-        Optional<Scenario> addedScenario = scenarioRepository.findByHubIdAndName(hubId, event.getName());
-        if (addedScenario.isPresent()) {
-            log.info("Попытка добавления нового сценария. " +
-                    "Сценарий с названием: {} уже зарегистрирован в хабе с ID: {}.", event.getName(), hubId);
-            return;
-        }
-
-        Scenario scenario = new Scenario();
-        scenario.setId(null);
-        scenario.setHubId(hubId);
-        scenario.setName(event.getName());
-        scenario.setConditions(
-                event.getConditions().stream()
-                        .collect(Collectors.toMap(
-                                ScenarioConditionAvro::getSensorId,
-                                conditionMapper::fromAvro
-                                )
-                        )
-        );
-        scenario.setActions(
-                event.getActions().stream()
-                        .collect(Collectors.toMap(
-                                DeviceActionAvro::getSensorId,
-                                actionMapper::fromAvro
-                                )
-                        )
-        );
-
-        scenarioRepository.save(scenario);
-        log.info("В хабе с ID: {} зарегистрирован новый сценарий с названием: {}.", hubId, event.getName());
-    }
-
-    private void handleEvent(String hubId, ScenarioRemovedEventAvro event) {
-        Optional<Scenario> removedScenario = scenarioRepository.findByHubIdAndName(hubId, event.getName());
-        if (removedScenario.isEmpty()) {
-            log.info("Удаление сценария. Сценарий с названием: {} не найден в хабе с ID: {}.", event.getName(), hubId);
-            return;
-        }
-
-        scenarioRepository.deleteById(removedScenario.get().getId());
-        log.info("Удаление сценария с названием: {} в хабе с ID: {}.", event.getName(), hubId);
     }
 
 }

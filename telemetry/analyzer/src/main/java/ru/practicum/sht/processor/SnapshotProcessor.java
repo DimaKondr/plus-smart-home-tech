@@ -44,7 +44,6 @@ public class SnapshotProcessor {
         this.hubRouterClient = hubRouterClient;
     }
 
-
     public void start() {
         try {
             Properties properties = new Properties();
