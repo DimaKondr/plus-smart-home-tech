@@ -49,8 +49,6 @@ public class ProductServiceImpl implements ProductService {
                 pageable
         );
 
-        //Page<Product> productPage = shoppingStoreRepository.findByProductCategory(category, pageable);
-
         return productMapper.toPageDto(productPage);
     }
 
@@ -131,10 +129,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto getProductById(UUID productId) throws ProductNotFoundException {
         Product product = shoppingStoreRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Товар с ID: " + productId + " не найден."));
-
-        /*if (product.getProductState() == ProductState.DEACTIVATE) {
-            throw new ProductNotFoundException("Товар с ID: " + productId + " не найден.");
-        }*/
 
         return productMapper.toDto(product);
     }

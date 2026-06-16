@@ -2,7 +2,6 @@ package ru.practicum.sht.contract.shopping.cart;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.sht.dto.shopping.cart.ShoppingCartDto;

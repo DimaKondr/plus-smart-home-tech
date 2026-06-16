@@ -8,7 +8,6 @@ import ru.practicum.sht.contract.warehouse.WarehouseOperations;
 import ru.practicum.sht.dto.shopping.cart.ShoppingCartDto;
 import ru.practicum.sht.exception.shopping.cart.NoProductsInShoppingCartException;
 import ru.practicum.sht.exception.shopping.cart.NotAuthorizedUserException;
-import ru.practicum.sht.exception.warehouse.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.sht.mapper.ShoppingCartMapper;
 import ru.practicum.sht.model.ShoppingCart;
 import ru.practicum.sht.repository.DeactivatedShoppingCartException;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final ShoppingCartRepository shoppingCartRepository;
     private final ShoppingCartMapper shoppingCartMapper;
-    //private final WarehouseClient warehouseClient;
     private final WarehouseOperations warehouseClient;
 
     @Override
@@ -76,29 +74,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             });
         }
 
-        // 2. ПРОВЕРКА НА СКЛАДЕ: Маппим текущее (еще не сохраненное) состояние корзины и отправляем в Feign
         ShoppingCartDto previewDto = shoppingCartMapper.toDto(shoppingCart);
         log.info("Запрос на проверку доступности товаров на складе для пользователя {}.", username);
-        // Если товаров не хватает, склад должен выбросить ошибку (например, 400 Bad Request),
-        // которая прервет транзакцию и не сохранит изменения.
-        warehouseClient.checkProduct(previewDto);
-        //checkProducts(previewDto);
 
-        /*try {
-            warehouseClient.checkProduct(previewDto);
-        } catch (ProductInShoppingCartLowQuantityInWarehouseException e) {
-            log.error("На складе (сервис Warehouse) нет товара в нужном количестве. Получена ошибка: {}, {}.",
-                    e.getMessage(), e.getMissingProductsErrors());
-            throw new ProductInShoppingCartLowQuantityInWarehouseException(
-                    e.getMessage(),
-                    e.getMissingProductsErrors()
-            );
-        } catch (Exception e) {
-            log.error("Неудачная попытка проверки наличия товара на складе (сервис Warehouse). Ошибка: {}.",
-                    e.getMessage());
-            throw new RuntimeException("Неудачная попытка проверки наличия товара на складе в сервисе Warehouse. " +
-                    "Проверьте сервис Warehouse.", e);
-        }*/
+        warehouseClient.checkProduct(previewDto);
 
         ShoppingCart updatedCart = shoppingCartRepository.save(shoppingCart);
         log.info("Обновлен состав корзины пользователя {} >>> {}.", username, updatedCart.getProducts());
@@ -184,32 +163,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             shoppingCart.getProducts().put(productId, request.getNewQuantity());
         }
 
-        // 3. ПРОВЕРКА НА СКЛАДЕ: При изменении количества (в большую сторону) также валидируем остатки
         ShoppingCartDto previewDto = shoppingCartMapper.toDto(shoppingCart);
         log.info("Запрос на проверку доступности товаров при изменении количества для пользователя {}.", username);
         warehouseClient.checkProduct(previewDto);
-        //checkProducts(previewDto);
 
         ShoppingCart updatedCart = shoppingCartRepository.save(shoppingCart);
         return shoppingCartMapper.toDto(updatedCart);
     }
-
-    /*private void checkProducts(ShoppingCartDto previewDto) {
-        try {
-            warehouseClient.checkProduct(previewDto);
-        } catch (ProductInShoppingCartLowQuantityInWarehouseException e) {
-            log.error("На складе (сервис Warehouse) нет товара в нужном количестве. Получена ошибка: {}, {}.",
-                    e.getMessage(), e.getMissingProductsErrors());
-            throw new ProductInShoppingCartLowQuantityInWarehouseException(
-                    e.getMessage(),
-                    e.getMissingProductsErrors()
-            );
-        } catch (Exception e) {
-            log.error("Неудачная попытка проверки наличия товара на складе (сервис Warehouse). Ошибка: {}.",
-                    e.getMessage());
-            throw new RuntimeException("Неудачная попытка проверки наличия товара на складе в сервисе Warehouse. " +
-                    "Проверьте сервис Warehouse.", e);
-        }
-    }*/
 
 }

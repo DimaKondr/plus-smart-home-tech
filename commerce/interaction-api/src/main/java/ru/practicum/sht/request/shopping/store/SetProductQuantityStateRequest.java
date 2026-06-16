@@ -6,7 +6,6 @@ import ru.practicum.sht.dto.shopping.store.QuantityState;
 
 import java.util.UUID;
 
-//@Value
 @Builder
 @Getter
 @Setter
@@ -17,7 +16,6 @@ import java.util.UUID;
 public class SetProductQuantityStateRequest {
 
     @NotNull(message = "ID товара не должно быть null")
-    //String productId;
     UUID productId;
 
     @NotNull(message = "Состояние остатка товара не должно быть null")

@@ -1,15 +1,11 @@
 package ru.practicum.sht.dto.warehouse;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-//@AllArgsConstructor
 public class BookedProductsDto {
 
     @NotNull(message = "Общий вес товаров не должен быть null")

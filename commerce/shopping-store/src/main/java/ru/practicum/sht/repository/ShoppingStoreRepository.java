@@ -19,6 +19,4 @@ public interface ShoppingStoreRepository extends JpaRepository<Product, UUID> {
             Pageable pageable
     );
 
-    //Page<Product> findByProductCategory(ProductCategory productCategory, Pageable pageable);
-
 }

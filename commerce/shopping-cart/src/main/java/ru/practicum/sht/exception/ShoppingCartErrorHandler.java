@@ -16,7 +16,6 @@ public class ShoppingCartErrorHandler {
     public ResponseEntity<Map<String, Object>> handleLowQuantityException(
             ProductInShoppingCartLowQuantityInWarehouseException e
     ) {
-        // Формируем JSON для фронтенда (можно сделать идентичным складу или дополнить)
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("error", e.getMessage());
         body.put("missingProducts", e.getMissingProductsErrors());

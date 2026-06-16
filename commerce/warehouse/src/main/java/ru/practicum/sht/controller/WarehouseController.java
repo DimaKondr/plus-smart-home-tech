@@ -20,15 +20,6 @@ import ru.practicum.sht.service.WarehouseService;
 public class WarehouseController implements WarehouseOperations {
     private final WarehouseService warehouseService;
 
-    /*@PutMapping
-    public void addNewProduct(
-            @RequestBody
-                @NotNull(message = "Добавляемый новый товар не может быть null")
-                @Valid NewProductInWarehouseRequest request
-    ) {
-
-    }*/
-
     @Override
     public void addNewProduct(NewProductInWarehouseRequest request) {
         log.info("Поступил запрос на добавление нового типа товара на склад: {}.", request);
@@ -37,15 +28,6 @@ public class WarehouseController implements WarehouseOperations {
 
         log.info("Новый тип товара {} добавлен на склад.", request);
     }
-
-    /*@PostMapping("/check")
-    public BookedProductsDto checkProduct(
-            @RequestBody
-                @NotNull(message = "Проверяемая корзина товаров не может быть null")
-                @Valid ShoppingCartDto dto
-    ) {
-        return null;
-    }*/
 
     @Override
     public BookedProductsDto checkProduct(ShoppingCartDto dto) {
@@ -58,15 +40,6 @@ public class WarehouseController implements WarehouseOperations {
         return response;
     }
 
-    /*@PostMapping("/add")
-    public BookedProductsDto acceptProductToWarehouse(
-            @RequestBody
-                @NotNull(message = "Запрос на добавление определенного количества товара не может быть null")
-                @Valid AddProductToWarehouseRequest request
-    ) {
-        return null;
-    }*/
-
     @Override
     public void acceptProductToWarehouse(AddProductToWarehouseRequest request) {
         log.info("Поступил запрос на пополнение складских запасов товара с ID: {} на {} единиц.",
@@ -77,11 +50,6 @@ public class WarehouseController implements WarehouseOperations {
         log.info("Количество товара с ID: {} успешно увеличено на {} единиц.",
                 request.getProductId(), request.getQuantity());
     }
-
-    /*@GetMapping("/address")
-    public AddressDto getAddress() {
-        return null;
-    }*/
 
     @Override
     public AddressDto getAddress() {
