@@ -14,6 +14,51 @@ services:
       interval: 5s
       retries: 10
 
+  sht-shopping-store-db:
+    image: postgres:16.1
+    container_name: postgres-sht-shopping-store-db
+    ports:
+      - "5470:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-shopping-store-service
+      - POSTGRES_DB=sht-shopping-store-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  sht-shopping-cart-db:
+    image: postgres:16.1
+    container_name: postgres-sht-shopping-cart-db
+    ports:
+      - "5471:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-shopping-cart-service
+      - POSTGRES_DB=sht-shopping-cart-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  sht-warehouse-db:
+    image: postgres:16.1
+    container_name: postgres-sht-warehouse-db
+    ports:
+      - "5472:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-warehouse-service
+      - POSTGRES_DB=sht-warehouse-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka
