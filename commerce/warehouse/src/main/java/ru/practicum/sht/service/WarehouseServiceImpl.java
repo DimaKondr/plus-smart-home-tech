@@ -19,10 +19,9 @@ import ru.practicum.sht.request.warehouse.AddProductToWarehouseRequest;
 import ru.practicum.sht.request.warehouse.NewProductInWarehouseRequest;
 
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,27 +52,32 @@ public class WarehouseServiceImpl implements WarehouseService {
     public BookedProductsDto checkProduct(ShoppingCartDto dto)
             throws ProductInShoppingCartLowQuantityInWarehouseException {
 
+        Map<UUID, Long> requestedProducts = dto.getProducts();
+        Set<UUID> productIds = requestedProducts.keySet();
+
+        Map<UUID, WarehouseProduct> productsMap = productRepository.findAllById(productIds).stream()
+                .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
+
+        Map<UUID, Long> stocksMap = stockRepository.findAllById(productIds).stream()
+                .collect(Collectors.toMap(WarehouseStock::getProductId, WarehouseStock::getQuantity));
+
+        Map<UUID, String> missingProductsErrors = new HashMap<>();
         double totalWeight = 0.0;
         double totalVolume = 0.0;
         boolean isFragile = false;
 
-        Map<UUID, String> missingProductsErrors = new HashMap<>();
-
-        for (Map.Entry<UUID, Long> entry : dto.getProducts().entrySet()) {
+        for (Map.Entry<UUID, Long> entry : requestedProducts.entrySet()) {
             UUID productId = entry.getKey();
             long requestedQuantity = entry.getValue();
 
-            WarehouseProduct product = productRepository.findById(productId).orElse(null);
+            WarehouseProduct product = productsMap.get(productId);
             if (product == null) {
                 missingProductsErrors.put(productId, "Неизвестный товар. " +
                         "Данный тип товара на складе ранее не регистрировался.");
                 continue;
             }
 
-            long availableQuantity = stockRepository.findById(productId)
-                    .map(WarehouseStock::getQuantity)
-                    .orElse(0L);
-
+            long availableQuantity = stocksMap.getOrDefault(productId, 0L);
             if (availableQuantity < requestedQuantity) {
                 missingProductsErrors.put(productId, String.format("Недостаточное количество на складе. " +
                                 "Запрошено: %d >>> Доступно: %d.", requestedQuantity, availableQuantity));

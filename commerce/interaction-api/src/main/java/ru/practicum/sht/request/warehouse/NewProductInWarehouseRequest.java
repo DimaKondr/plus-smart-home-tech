@@ -14,7 +14,6 @@ import java.util.UUID;
 public class NewProductInWarehouseRequest {
 
     @NotNull(message = "ID товара не должно быть null")
-    //String productId;
     UUID productId;
     Boolean fragile;
 

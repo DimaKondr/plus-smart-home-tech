@@ -11,7 +11,6 @@ import java.util.UUID;
 @Value
 @Builder
 public class ProductDto {
-    //String productId;
     UUID productId;
 
     @NotNull(message = "Название товара не должно быть null")
