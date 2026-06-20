@@ -11,8 +11,8 @@ import ru.practicum.sht.exception.warehouse.NoSpecifiedProductInWarehouseExcepti
 import ru.practicum.sht.exception.warehouse.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.sht.exception.warehouse.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.sht.mapper.ProductMapper;
-import ru.practicum.sht.model.WarehouseProduct;
 import ru.practicum.sht.model.WarehouseStock;
+import ru.practicum.sht.repository.ProductWithStockShort;
 import ru.practicum.sht.repository.WarehouseProductRepository;
 import ru.practicum.sht.repository.WarehouseStockRepository;
 import ru.practicum.sht.request.warehouse.AddProductToWarehouseRequest;
@@ -55,11 +55,10 @@ public class WarehouseServiceImpl implements WarehouseService {
         Map<UUID, Long> requestedProducts = dto.getProducts();
         Set<UUID> productIds = requestedProducts.keySet();
 
-        Map<UUID, WarehouseProduct> productsMap = productRepository.findAllById(productIds).stream()
-                .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
-
-        Map<UUID, Long> stocksMap = stockRepository.findAllById(productIds).stream()
-                .collect(Collectors.toMap(WarehouseStock::getProductId, WarehouseStock::getQuantity));
+        Map<UUID, ProductWithStockShort> productsMap = productRepository
+                .findAllProductsWithStock(productIds)
+                .stream()
+                .collect(Collectors.toMap(ProductWithStockShort::getProductId, Function.identity()));
 
         Map<UUID, String> missingProductsErrors = new HashMap<>();
         double totalWeight = 0.0;
@@ -70,30 +69,17 @@ public class WarehouseServiceImpl implements WarehouseService {
             UUID productId = entry.getKey();
             long requestedQuantity = entry.getValue();
 
-            WarehouseProduct product = productsMap.get(productId);
+            ProductWithStockShort product = productsMap.get(productId);
             if (product == null) {
                 missingProductsErrors.put(productId, "Неизвестный товар. " +
                         "Данный тип товара на складе ранее не регистрировался.");
                 continue;
             }
 
-            long availableQuantity = stocksMap.getOrDefault(productId, 0L);
+            long availableQuantity = product.getQuantity() != null ? product.getQuantity() : 0L;
             if (availableQuantity < requestedQuantity) {
                 missingProductsErrors.put(productId, String.format("Недостаточное количество на складе. " +
-                                "Запрошено: %d >>> Доступно: %d.", requestedQuantity, availableQuantity));
-            }
-
-            if (!missingProductsErrors.isEmpty()) {
-                continue;
-            }
-
-            totalWeight += product.getWeight() * requestedQuantity;
-
-            double singleVolume = product.getWidth() * product.getHeight() * product.getDepth();
-            totalVolume += singleVolume * requestedQuantity;
-
-            if (product.getFragile()) {
-                isFragile = true;
+                        "Запрошено: %d >>> Доступно: %d.", requestedQuantity, availableQuantity));
             }
         }
 
@@ -101,6 +87,22 @@ public class WarehouseServiceImpl implements WarehouseService {
             throw new ProductInShoppingCartLowQuantityInWarehouseException(
                     "Некоторые товары отсутствуют в требуемом количестве.", missingProductsErrors
             );
+        }
+
+        for (Map.Entry<UUID, Long> entry : requestedProducts.entrySet()) {
+            UUID productId = entry.getKey();
+            long requestedQuantity = entry.getValue();
+
+            ProductWithStockShort product = productsMap.get(productId);
+
+            totalWeight += product.getWeight() * requestedQuantity;
+
+            double singleVolume = product.getWidth() * product.getHeight() * product.getDepth();
+            totalVolume += singleVolume * requestedQuantity;
+
+            if (Boolean.TRUE.equals(product.getFragile())) {
+                isFragile = true;
+            }
         }
 
         return BookedProductsDto.builder()
