@@ -22,23 +22,8 @@ import java.util.UUID;
 public class ShoppingStoreController implements ShoppingStoreOperations {
     private final ProductService productService;
 
-    /*@GetMapping
-    public PageProductDto getProductPage(
-            @RequestParam
-                @Pattern(regexp = "LIGHTING|CONTROL|SENSORS",
-                        message = "Допустимые категории: LIGHTING, CONTROL, SENSORS.")
-                ProductCategory category,
-            @RequestParam(defaultValue = "0")
-                @PositiveOrZero Integer page,
-            @RequestParam(defaultValue = "20")
-                @PositiveOrZero Integer size,
-            @RequestParam String[] sort
-    ) {
-        return null;
-    }*/
-
     @Override
-    public PageProductDto getProducts(/*ProductCategory category,*/String category, Integer page, Integer size, List<String> sort) {
+    public PageProductDto getProducts(String category, Integer page, Integer size, List<String> sort) {
         log.info("Поступил запрос на получение страницы с товарами: " +
                 "категория {}, индекс страниц {}, размер страницы {}, количество параметров сортировки {}.",
                 category, page, size, sort);
@@ -58,15 +43,6 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
         return dto;
     }
 
-    /*@PutMapping
-    public ProductDto createProduct(
-            @RequestBody
-                @NotNull(message = "Добавляемый товар не может быть null")
-                @Valid ProductDto dto
-    ) {
-        return null;
-    }*/
-
     @Override
     public ProductDto createProduct(ProductDto dto) {
         log.info("Поступил запрос на добавление нового товара: {}.", dto);
@@ -77,15 +53,6 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
 
         return createdDto;
     }
-
-    /*@PostMapping
-    public ProductDto updateProduct(
-            @RequestBody
-                @NotNull(message = "Добавляемый товар не может быть null")
-                @Valid ProductDto dto
-    ) {
-        return null;
-    }*/
 
     @Override
     public ProductDto updateProduct(ProductDto dto) {
@@ -98,15 +65,6 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
         return updatedDto;
     }
 
-    /*@PostMapping("/removeProductFromStore")
-    public Boolean removeProduct(
-            @RequestBody
-                @NotNull(message = "ID удаляемого товара не может быть null")
-                String productId
-    ) {
-        return null;
-    }*/
-
     @Override
     public Boolean removeProduct(UUID productId) {
         log.info("Поступил запрос на удаление товара с ID: {}.", productId);
@@ -117,40 +75,17 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
         return isDone;
     }
 
-    /*@PostMapping("/quantityState")
-    public Boolean setQuantityState(
-            @RequestBody SetProductQuantityStateRequest quantityState
-    ) {
-        return null;
-    }*/
-
     @Override
-    public Boolean setQuantityState(SetProductQuantityStateRequest quantityState/*UUID productId, String quantityState*/) {
+    public Boolean setQuantityState(SetProductQuantityStateRequest quantityState) {
         log.info("Поступил запрос на обновление данных о статусе наличия товара с ID: {}. Данные о наличии: {}.",
                 quantityState.getProductId(), quantityState.getQuantityState());
-                /*productId, quantityState);*/
-
-        /*SetProductQuantityStateRequest request = SetProductQuantityStateRequest.builder()
-                .productId(productId)
-                .build();*/
 
         Boolean isDone = productService.setQuantityState(quantityState);
-        /*Boolean isDone = productService.setQuantityState(request);*/
         if (isDone) log.info("Для товара с ID: {} обновлены данные о наличии: {}.",
                 quantityState.getProductId(), quantityState.getQuantityState());
-                /*productId, quantityState);*/
 
         return isDone;
     }
-
-    /*@GetMapping("/{productId}")
-    public ProductDto getProduct(
-            @PathVariable
-                @NotNull(message = "ID товара не может быть null")
-                String productId
-    ) {
-        return null;
-    }*/
 
     @Override
     public ProductDto getProductById(UUID productId) {

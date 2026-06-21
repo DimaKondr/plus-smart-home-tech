@@ -7,10 +7,9 @@ import ru.practicum.sht.request.warehouse.NewProductInWarehouseRequest;
 @Component
 public class ProductMapper {
 
-    public WarehouseProduct toEntity (NewProductInWarehouseRequest request) {
+    public WarehouseProduct toEntity(NewProductInWarehouseRequest request) {
         return new WarehouseProduct(
                 request.getProductId(),
-                //request.getFragile() == null ? false : request.getFragile(),
                 Boolean.TRUE.equals(request.getFragile()),
                 request.getDimension().getWidth(),
                 request.getDimension().getHeight(),

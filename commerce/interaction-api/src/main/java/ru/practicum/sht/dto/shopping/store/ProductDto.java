@@ -2,20 +2,15 @@ package ru.practicum.sht.dto.shopping.store;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Value
 @Builder
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-//@AllArgsConstructor
 public class ProductDto {
-    //String productId;
     UUID productId;
 
     @NotNull(message = "Название товара не должно быть null")

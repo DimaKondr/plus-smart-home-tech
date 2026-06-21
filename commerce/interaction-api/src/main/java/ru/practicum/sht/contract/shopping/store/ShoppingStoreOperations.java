@@ -8,7 +8,6 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.sht.dto.shopping.store.PageProductDto;
-import ru.practicum.sht.dto.shopping.store.ProductCategory;
 import ru.practicum.sht.dto.shopping.store.ProductDto;
 import ru.practicum.sht.exception.shopping.store.ProductNotFoundException;
 import ru.practicum.sht.request.shopping.store.SetProductQuantityStateRequest;
@@ -24,13 +23,11 @@ public interface ShoppingStoreOperations {
             @RequestParam
                 @Pattern(regexp = "LIGHTING|CONTROL|SENSORS",
                          message = "Допустимые категории: LIGHTING, CONTROL, SENSORS.")
-                //ProductCategory category,
                 String category,
             @RequestParam(defaultValue = "0")
                 @PositiveOrZero Integer page,
             @RequestParam(defaultValue = "20")
                 @PositiveOrZero Integer size,
-            //@RequestParam String[] sort
             @RequestParam(required = false) List<String> sort
     );
 
@@ -57,17 +54,8 @@ public interface ShoppingStoreOperations {
 
     @PostMapping("/quantityState")
     Boolean setQuantityState(
-            /*@RequestBody
-                @NotNull(message = "Данные о состоянии наличия товара не могут быть null")
-                @Valid SetProductQuantityStateRequest quantityState,*/
-            /*@RequestBody(required = false)*/
-                //@NotNull(message = "Данные о состоянии наличия товара не могут быть null")
-                @SpringQueryMap @Valid SetProductQuantityStateRequest request/*,
-            @RequestParam
-                UUID productId,
-            @RequestParam
-                String quantityState*/
-
+            @SpringQueryMap
+                @Valid SetProductQuantityStateRequest request
     ) throws ProductNotFoundException;
 
     @GetMapping("/{productId}")

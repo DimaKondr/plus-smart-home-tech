@@ -22,16 +22,6 @@ import java.util.UUID;
 public class ShoppingCartController implements ShoppingCartOperations {
     private final ShoppingCartService shoppingCartService;
 
-    /*@Override
-    //@GetMapping
-    public ShoppingCartDto getShoppingCart(
-            @RequestParam
-                @NotBlank(message = "Имя пользователя не может быть null и пустым")
-                String username
-    ) {
-        return null;
-    }*/
-
     @Override
     public ShoppingCartDto getShoppingCart(String username) {
         log.info("Поступил запрос на получение корзины пользователя: {}.", username);
@@ -42,20 +32,6 @@ public class ShoppingCartController implements ShoppingCartOperations {
 
         return dto;
     }
-
-    /*@Override
-    //@PutMapping
-    public ShoppingCartDto putToShoppingCart(
-            @RequestParam
-                @NotBlank(message = "Имя пользователя не может быть null и пустым")
-                String username,
-            @RequestBody
-                @NotNull(message = "Добавляемый товар не может быть null")
-                //Map<String, Long> products
-                Map<UUID, Long> products
-    ) {
-        return null;
-    }*/
 
     @Override
     public ShoppingCartDto putToShoppingCart(String username, Map<UUID, Long> products) {
@@ -68,36 +44,12 @@ public class ShoppingCartController implements ShoppingCartOperations {
         return dto;
     }
 
-    /*@Override
-    //@DeleteMapping
-    public void removeShoppingCart(
-            @RequestParam
-                @NotNull(message = "Имя пользователя не может быть null")
-                String username
-    ) {
-
-    }*/
-
     @Override
     public void removeShoppingCart(String username) {
         log.info("Поступил запрос на удаление (деактивации) корзины пользователя: {}.", username);
 
         shoppingCartService.removeShoppingCart(username);
     }
-
-    /*@Override
-    //@PostMapping("/remove")
-    public ShoppingCartDto removeFromShoppingCart(
-            @RequestParam
-                @NotNull(message = "Имя пользователя не может быть null")
-                String username,
-            @RequestBody
-                @NotNull(message = "Список товаров для удаления из корзины не может быть null")
-                //List<String> productIds
-                List<UUID> productIds
-    ) {
-        return null;
-    }*/
 
     @Override
     public ShoppingCartDto removeFromShoppingCart(String username, List<UUID> productIds) {
@@ -110,19 +62,6 @@ public class ShoppingCartController implements ShoppingCartOperations {
 
         return dto;
     }
-
-    /*@Override
-    //@PostMapping("/change-quantity")
-    public ShoppingCartDto changeQuantity(
-            @RequestParam
-                @NotNull(message = "Имя пользователя не может быть null и пустым")
-                String username,
-            @RequestBody
-                @NotNull(message = "Данные по количеству товаров не могут быть null")
-                @Valid ChangeProductQuantityRequest request
-    ) {
-        return null;
-    }*/
 
     @Override
     public ShoppingCartDto changeQuantity(String username, ChangeProductQuantityRequest request) {

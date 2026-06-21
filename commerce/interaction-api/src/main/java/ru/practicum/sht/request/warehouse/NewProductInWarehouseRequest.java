@@ -3,22 +3,17 @@ package ru.practicum.sht.request.warehouse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 import ru.practicum.sht.dto.warehouse.DimensionDto;
 
 import java.util.UUID;
 
 @Value
 @Builder
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-//@AllArgsConstructor
 public class NewProductInWarehouseRequest {
 
     @NotNull(message = "ID товара не должно быть null")
-    //String productId;
     UUID productId;
     Boolean fragile;
 

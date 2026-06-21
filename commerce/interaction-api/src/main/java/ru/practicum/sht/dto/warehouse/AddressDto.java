@@ -1,14 +1,10 @@
 package ru.practicum.sht.dto.warehouse;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-//@AllArgsConstructor
 public class AddressDto {
     String country;
     String city;

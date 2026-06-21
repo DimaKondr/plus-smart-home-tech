@@ -1,14 +1,10 @@
 package ru.practicum.sht.dto.shopping.store;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-//@AllArgsConstructor
 public class PageableObject {
     Long offset;
     SortObject sort;

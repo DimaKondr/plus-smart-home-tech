@@ -1,17 +1,13 @@
 package ru.practicum.sht.dto.shopping.store;
 
 import jakarta.validation.Valid;
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
 
 import java.util.List;
 
 @Value
 @Builder
-//@Getter
-//@Setter
-//@ToString
-//@EqualsAndHashCode
-//@AllArgsConstructor
 public class PageProductDto {
     Long totalElements;
     Integer totalPages;

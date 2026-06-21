@@ -18,6 +18,7 @@ import ru.practicum.sht.model.Product;
 import ru.practicum.sht.repository.ShoppingStoreRepository;
 import ru.practicum.sht.request.shopping.store.SetProductQuantityStateRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,16 +31,30 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PageProductDto getProducts(ProductCategory category, int page, int size, List<String> sortParameters) {
-        List<Sort.Order> orders = sortParameters.stream()
-                .map(sort -> {
-                    String[] parts = sort.split(",");
-                    String property = parts[0];
-                    Sort.Direction direction = (parts.length > 1 && "desc".equalsIgnoreCase(parts[1]))
+        List<Sort.Order> orders = new ArrayList<>();
+
+        for (int i = 0; i < sortParameters.size(); i++) {
+            String current = sortParameters.get(i);
+
+            if (current.contains(",")) {
+                String[] parts = current.split(",");
+                String property = parts[0];
+                Sort.Direction direction = (parts.length > 1 && "desc".equalsIgnoreCase(parts[1]))
+                        ? Sort.Direction.DESC
+                        : Sort.Direction.ASC;
+                orders.add(new Sort.Order(direction, property));
+            } else if ("desc".equalsIgnoreCase(current) || "asc".equalsIgnoreCase(current)) {
+                if (!orders.isEmpty()) {
+                    Sort.Order lastOrder = orders.remove(orders.size() - 1);
+                    Sort.Direction direction = "desc".equalsIgnoreCase(current)
                             ? Sort.Direction.DESC
                             : Sort.Direction.ASC;
-                    return new Sort.Order(direction, property);
-                })
-                .toList();
+                    orders.add(new Sort.Order(direction, lastOrder.getProperty()));
+                }
+            } else {
+                orders.add(new Sort.Order(Sort.Direction.ASC, current));
+            }
+        }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(orders));
 
@@ -48,8 +63,6 @@ public class ProductServiceImpl implements ProductService {
                 ProductState.ACTIVE,
                 pageable
         );
-
-        //Page<Product> productPage = shoppingStoreRepository.findByProductCategory(category, pageable);
 
         return productMapper.toPageDto(productPage);
     }
@@ -131,10 +144,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductDto getProductById(UUID productId) throws ProductNotFoundException {
         Product product = shoppingStoreRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Товар с ID: " + productId + " не найден."));
-
-        /*if (product.getProductState() == ProductState.DEACTIVATE) {
-            throw new ProductNotFoundException("Товар с ID: " + productId + " не найден.");
-        }*/
 
         return productMapper.toDto(product);
     }
