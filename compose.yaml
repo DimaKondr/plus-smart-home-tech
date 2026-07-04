@@ -59,6 +59,51 @@ services:
       interval: 5s
       retries: 10
 
+  sht-order-db:
+    image: postgres:16.1
+    container_name: postgres-sht-order-db
+    ports:
+      - "5473:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-order-service
+      - POSTGRES_DB=sht-order-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  sht-delivery-db:
+    image: postgres:16.1
+    container_name: postgres-sht-delivery-db
+    ports:
+      - "5474:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-delivery-service
+      - POSTGRES_DB=sht-delivery-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
+  sht-payment-db:
+    image: postgres:16.1
+    container_name: postgres-sht-payment-db
+    ports:
+      - "5475:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgres-sht-payment-service
+      - POSTGRES_DB=sht-payment-service
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10
+
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka
