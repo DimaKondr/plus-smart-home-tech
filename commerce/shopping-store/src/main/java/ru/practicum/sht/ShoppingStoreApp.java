@@ -9,9 +9,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class ShoppingStoreApp {
 
     public static void main(String[] args) {
-
         SpringApplication.run(ShoppingStoreApp.class, args);
-
     }
 
 }

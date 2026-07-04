@@ -13,7 +13,7 @@ import java.util.UUID;
 @Builder
 public class ShoppingCartDto {
 
-    @NotNull(message = "ID корзины не должно быть null")
+    @NotNull(message = "ID корзины не должен быть null")
     UUID shoppingCartId;
 
     @NotNull(message = "Корзина товаров не должна быть null")
