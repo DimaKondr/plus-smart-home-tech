@@ -98,4 +98,15 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
         return dto;
     }
 
+    @Override
+    public List<ProductDto> getProductsByIdList(List<UUID> productsIdList) {
+        log.info("Поступил запрос на получение данных некоторых товаров по списку ID: {}.", productsIdList);
+
+        List<ProductDto> dtoList = productService.getProductsByIdList(productsIdList);
+
+        log.info("Получены данные товаров по списку: {}.", dtoList);
+
+        return dtoList;
+    }
+
 }

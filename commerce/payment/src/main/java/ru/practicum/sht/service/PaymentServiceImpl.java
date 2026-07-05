@@ -17,8 +17,11 @@ import ru.practicum.sht.repository.PaymentRepository;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,13 +97,17 @@ public class PaymentServiceImpl implements PaymentService {
             );
         }
 
+        List<UUID> productsIdList = List.copyOf(order.getProducts().keySet());
+        Map<UUID, ProductDto> productsMap = shoppingStoreClient.getProductsByIdList(productsIdList).stream()
+                .collect(Collectors.toMap(ProductDto::getProductId, Function.identity()));
+
         BigDecimal productTotalCost = BigDecimal.ZERO;
 
         for (Map.Entry<UUID, Long> entry : order.getProducts().entrySet()) {
             UUID productId = entry.getKey();
             Long quantity = entry.getValue();
 
-            ProductDto productDto = shoppingStoreClient.getProductById(productId);
+            ProductDto productDto = productsMap.get(productId);
 
             if (productDto == null || productDto.getPrice() == null) {
                 throw new NotEnoughInfoInOrderToCalculateException("Не удалось получить цену для товара с ID: "

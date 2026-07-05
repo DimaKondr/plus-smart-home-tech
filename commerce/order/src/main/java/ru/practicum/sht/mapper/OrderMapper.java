@@ -26,7 +26,7 @@ public class OrderMapper {
                 .build();
     }
 
-    public Order toNewOrderEntity(CreateNewOrderRequest request) {
+    public Order toNewOrderEntity(CreateNewOrderRequest request, String username) {
         Order entity = new Order();
 
         entity.setShoppingCartId(request.getShoppingCart().getShoppingCartId());
@@ -40,8 +40,7 @@ public class OrderMapper {
         entity.setTotalPrice(null);
         entity.setProductPrice(null);
         entity.setDeliveryPrice(null);
-        // TODO: Доработать setUsername() когда будет ясно как в OrderController будете передаваться username.
-        entity.setUsername(null);
+        entity.setUsername(username);
         entity.setCountry(request.getDeliveryAddress().getCountry());
         entity.setCity(request.getDeliveryAddress().getCity());
         entity.setStreet(request.getDeliveryAddress().getStreet());

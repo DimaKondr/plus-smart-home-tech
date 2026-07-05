@@ -25,8 +25,13 @@ public interface OrderOperations {
     ) throws NotAuthorizedUserException;
 
     @PutMapping
-    OrderDto createNewOrder(@RequestBody @Valid CreateNewOrderRequest request)
-            throws NoSpecifiedProductInWarehouseException;
+    OrderDto createNewOrder(
+            @RequestBody
+                @Valid CreateNewOrderRequest request,
+            @RequestParam
+                @NotBlank(message = "Имя пользователя не может быть null и пустым")
+                String username
+    ) throws NoSpecifiedProductInWarehouseException;
 
     @PostMapping("/return")
     OrderDto productReturn(@RequestBody @Valid ProductReturnRequest request)

@@ -3,6 +3,7 @@ package ru.practicum.sht.service;
 import ru.practicum.sht.dto.shopping.store.PageProductDto;
 import ru.practicum.sht.dto.shopping.store.ProductCategory;
 import ru.practicum.sht.dto.shopping.store.ProductDto;
+import ru.practicum.sht.exception.shopping.store.ProductNotFoundByIdListException;
 import ru.practicum.sht.exception.shopping.store.ProductNotFoundException;
 import ru.practicum.sht.request.shopping.store.SetProductQuantityStateRequest;
 
@@ -22,5 +23,7 @@ public interface ProductService {
     Boolean setQuantityState(SetProductQuantityStateRequest quantityState) throws ProductNotFoundException;
 
     ProductDto getProductById(UUID productId) throws ProductNotFoundException;
+
+    List<ProductDto> getProductsByIdList(List<UUID> productsIdList) throws ProductNotFoundByIdListException;
 
 }

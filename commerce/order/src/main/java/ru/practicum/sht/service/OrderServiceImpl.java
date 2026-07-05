@@ -46,8 +46,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderDto createNewOrder(CreateNewOrderRequest request) {
-        Order order = orderMapper.toNewOrderEntity(request);
+    public OrderDto createNewOrder(CreateNewOrderRequest request, String username) {
+        Order order = orderMapper.toNewOrderEntity(request, username);
         order = orderRepository.save(order);
         return orderMapper.toDto(order);
     }

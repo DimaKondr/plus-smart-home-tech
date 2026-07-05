@@ -18,5 +18,4 @@ public class ProductInShoppingCartLowQuantityInWarehouseException extends Runtim
         super(message);
         this.missingProductsErrors = missingProductsErrors;
     }
-
 }

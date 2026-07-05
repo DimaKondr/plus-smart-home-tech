@@ -12,6 +12,7 @@ import ru.practicum.sht.dto.shopping.store.PageProductDto;
 import ru.practicum.sht.dto.shopping.store.ProductCategory;
 import ru.practicum.sht.dto.shopping.store.ProductDto;
 import ru.practicum.sht.dto.shopping.store.ProductState;
+import ru.practicum.sht.exception.shopping.store.ProductNotFoundByIdListException;
 import ru.practicum.sht.exception.shopping.store.ProductNotFoundException;
 import ru.practicum.sht.mapper.ProductMapper;
 import ru.practicum.sht.model.Product;
@@ -146,6 +147,29 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Товар с ID: " + productId + " не найден."));
 
         return productMapper.toDto(product);
+    }
+
+    @Override
+    public List<ProductDto> getProductsByIdList(List<UUID> productsIdList) {
+        List<Product> products = shoppingStoreRepository.findAllById(productsIdList);
+
+        List<UUID> missingProductsErrors = products.stream()
+                .map(Product::getProductId)
+                .filter(uuid -> !productsIdList.contains(uuid))
+                .toList();
+
+        if (!missingProductsErrors.isEmpty()) {
+            log.error("При запросе данных товаров по списку ID не были найдены товары со следующими ID: {}",
+                    missingProductsErrors);
+            throw new ProductNotFoundByIdListException(
+                    "При запросе данных товаров по списку их ID не по всем ID были найдены товары.",
+                    missingProductsErrors
+            );
+        }
+
+        return products.stream()
+                .map(productMapper::toDto)
+                .toList();
     }
 
 }

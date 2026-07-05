@@ -33,10 +33,10 @@ public class OrderController implements OrderOperations {
     }
 
     @Override
-    public OrderDto createNewOrder(CreateNewOrderRequest request) {
+    public OrderDto createNewOrder(CreateNewOrderRequest request, String username) {
         log.info("Поступил запрос на добавление нового заказа: {}.", request);
 
-        OrderDto answer = orderService.createNewOrder(request);
+        OrderDto answer = orderService.createNewOrder(request, username);
 
         log.info("Добавлен новый заказ: {}.", answer);
 
