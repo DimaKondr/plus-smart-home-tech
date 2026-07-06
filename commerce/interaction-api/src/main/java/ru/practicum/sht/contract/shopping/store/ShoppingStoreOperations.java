@@ -1,6 +1,7 @@
 package ru.practicum.sht.contract.shopping.store;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -9,6 +10,7 @@ import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.sht.dto.shopping.store.PageProductDto;
 import ru.practicum.sht.dto.shopping.store.ProductDto;
+import ru.practicum.sht.exception.shopping.store.ProductNotFoundByIdListException;
 import ru.practicum.sht.exception.shopping.store.ProductNotFoundException;
 import ru.practicum.sht.request.shopping.store.SetProductQuantityStateRequest;
 
@@ -64,5 +66,13 @@ public interface ShoppingStoreOperations {
                 @NotNull(message = "ID товара не может быть null")
                 UUID productId
     ) throws ProductNotFoundException;
+
+    @GetMapping("/products")
+    List<ProductDto> getProductsByIdList(
+            @RequestBody
+                @NotNull(message = "Список ID товаров не может быть null")
+                @NotEmpty(message = "Список ID товаров не должен быть пуст")
+                List<UUID> productsIdList
+    ) throws ProductNotFoundByIdListException;
 
 }

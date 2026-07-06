@@ -15,7 +15,7 @@ import java.util.UUID;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "product_id")
     private UUID productId;
 
@@ -40,6 +40,6 @@ public class Product {
     @Column(name = "product_category", nullable = false)
     private ProductCategory productCategory;
 
-    @Column(nullable = false)
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
 }

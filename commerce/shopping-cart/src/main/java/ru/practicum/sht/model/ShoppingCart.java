@@ -13,7 +13,7 @@ import java.util.UUID;
 public class ShoppingCart {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "shopping_cart_id")
     private UUID shoppingCartId;
 
@@ -31,5 +31,4 @@ public class ShoppingCart {
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
     private Map<UUID, Long> products = new HashMap<>();
-
 }

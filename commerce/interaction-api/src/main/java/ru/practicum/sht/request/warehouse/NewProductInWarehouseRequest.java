@@ -13,7 +13,7 @@ import java.util.UUID;
 @Builder
 public class NewProductInWarehouseRequest {
 
-    @NotNull(message = "ID товара не должно быть null")
+    @NotNull(message = "ID товара не должен быть null")
     UUID productId;
     Boolean fragile;
 
